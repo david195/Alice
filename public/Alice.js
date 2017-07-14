@@ -88,27 +88,44 @@ var Listening = (function(){
 
 /*Alice object*/
 var Alice = (function(){
+  var connection_type = "all";
+
   var container = null;
-  var IPS = "192.168.1.81";
+  var IPS = "192.168.1.67";
   var socket = io.connect('http://'+IPS+':3000', { 'forceNew': true });
+
   socket.on('answer',function(aswer){
-    console.log(aswer);
+    if(connection_type!="client")
+      console.log(aswer);
+  });
+
+  socket.on('exec',function(cmd){
+    if(connection_type!="client"){
+      exec(cmd);
+      console.log("exec: "+cmd);
+    }
   });
 
   var init = function(div){
     container = document.getElementById(div);
     Youtube.init(div);
-    Google.init(div);
     Wikipedia.init(div);
+    var events = {
+      connection:function(){
+        connection_type = this.value;
+      }
+    }
+    Gui.init(div,events);
   }
 
   var query = function(q){
+    if(connection_type=="server")return;
     q = q.toLowerCase();
     if(q.search("question") == 0){
       socket.emit('question',q.slice(9,q.length));
     }
     else
-      exec(q); /**services.js*/
+      socket.emit('order',q); /**services.js*/
   }
 
   return{

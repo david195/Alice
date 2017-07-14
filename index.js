@@ -3,7 +3,7 @@ function analyze(in_data,callback){
   return out_data;
 }
 
-var IPS = "192.168.1.81";
+var IPS = "192.168.1.67";
 var sockets = [];
 var express = require('express');
 var app = express();
@@ -13,9 +13,15 @@ var path    = require("path");
 
 io.on('connection', function(socket) {
   sockets.push(socket);
+  console.log(socket.conn.id+" connected");
   socket.on('question',function(data){
+    console.log(socket.conn.id+": question");
     var s = analyze(data)
-    this.emit('answer',s);
+    io.sockets.emit('answer',s);
+  });
+  socket.on('order',function(data){
+    console.log(socket.conn.id+": exec");
+    io.sockets.emit('exec',data);
   });
 });
 
